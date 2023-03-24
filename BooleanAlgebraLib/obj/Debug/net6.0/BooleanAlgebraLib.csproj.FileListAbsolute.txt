@@ -1,0 +1,12 @@
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\bin\Debug\net6.0\BooleanAlgebraLib.deps.json
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\bin\Debug\net6.0\BooleanAlgebraLib.dll
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\bin\Debug\net6.0\BooleanAlgebraLib.pdb
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.csproj.AssemblyReference.cache
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.AssemblyInfoInputs.cache
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.AssemblyInfo.cs
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.csproj.CoreCompileInputs.cache
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.dll
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\refint\BooleanAlgebraLib.dll
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\BooleanAlgebraLib.pdb
+C:\Users\Frederik\source\repos\TuringComplete\BooleanAlgebraLib\obj\Debug\net6.0\ref\BooleanAlgebraLib.dll

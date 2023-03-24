@@ -1,0 +1,11 @@
+﻿Prog ::= Or
+Or ::= And or Or
+	| And
+And ::= Not and And
+	| Not
+Not ::= not Not
+	| Expression
+Expression ::= leftParenthesis Or rightParenthesis
+	| identifier
+	| true
+	| false
