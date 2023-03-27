@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+using System.Collections;
 using System.Xml.Linq;
 
 namespace TuringComplete;
@@ -7,7 +8,7 @@ public interface IAstNode : IEquatable<IAstNode>
 {
     IAstNode? Parent { get; internal set; }
 
-    void Swap(IAstNode oldNode, IAstNode newNode);
+    void Swap(IAstNode? oldNode, IAstNode? newNode);
 
 }
 
@@ -32,11 +33,10 @@ public class RootNode : IAstNode
 
     public IAstNode? Parent { get => null; set => throw new Exception("Root node cannot have a parent."); }
 
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
-        if (oldNode == Node)
+        if (oldNode == Node && newNode is not null)
         {
-
             Node = newNode;
         }
     }
@@ -47,34 +47,13 @@ public class RootNode : IAstNode
     }
 }
 
-public class OrNode : IAstNode
+public class OrNode : IAstNode, IEnumerable<IAstNode>
 {
-    private IAstNode _left;
-    private IAstNode _right;
+    private readonly List<IAstNode> _children = new List<IAstNode>();
 
-    public OrNode(IAstNode left, IAstNode right)
+    public OrNode(List<IAstNode> children)
     {
-        Left = left;
-        Right = right;
-    }
-
-    public IAstNode Left
-    {
-        get => _left;
-        private set
-        {
-            _left = value;
-            _left.Parent = this;
-        }
-    }
-    public IAstNode Right
-    {
-        get => _right;
-        private set
-        {
-            _right = value;
-            _right.Parent = this;
-        }
+        _children = children;
     }
 
     IAstNode? IAstNode.Parent
@@ -83,52 +62,50 @@ public class OrNode : IAstNode
         set => Parent = value ?? throw new ArgumentNullException(nameof(value));
     }
     public IAstNode Parent { get; internal set; }
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
-        if (Left == oldNode)
+        if (oldNode is not null && newNode is not null)
         {
-            Left = newNode;
+            int index = _children.IndexOf(oldNode);
+            _children[index] = newNode;
         }
-        else if (Right == oldNode)
+        else if (oldNode is null && newNode is not null)
         {
-            Right = newNode;
+            _children.Add(newNode);
+        }
+        else if (oldNode is not null && newNode is null)
+        {
+            _children.Remove(oldNode);
         }
     }
 
     public bool Equals(IAstNode? other)
     {
-        return other is OrNode orNode && orNode.Left.Equals(Left) && orNode.Right.Equals(Right);
+        return other is OrNode node && !node.Any(n => !_children.Contains(n));
+    }
+
+    public IEnumerator<IAstNode> GetEnumerator()
+    {
+        for (int i = 0; i < _children.Count; i++)
+        {
+            yield return _children[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
 
-public class AndNode : IAstNode
+
+public class AndNode : IAstNode, IEnumerable<IAstNode>
 {
-    private IAstNode _left;
-    private IAstNode _right;
+    private readonly List<IAstNode> _children = new List<IAstNode>();
 
-    public AndNode(IAstNode left, IAstNode right)
+    public AndNode(List<IAstNode> children)
     {
-        Left = left;
-        Right = right;
-    }
-
-    public IAstNode Left
-    {
-        get => _left;
-        private set
-        {
-            _left = value;
-            _left.Parent = this;
-        }
-    }
-    public IAstNode Right
-    {
-        get => _right;
-        private set
-        {
-            _right = value;
-            _right.Parent = this;
-        }
+        _children = children;
     }
 
     IAstNode? IAstNode.Parent
@@ -138,20 +115,39 @@ public class AndNode : IAstNode
     }
     public IAstNode Parent { get; internal set; }
 
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
-        if (Left == oldNode)
+        if (oldNode is not null && newNode is not null)
         {
-            Left = newNode;
+            int index = _children.IndexOf(oldNode);
+            _children[index] = newNode;
         }
-        else if (Right == oldNode)
+        else if (oldNode is null && newNode is not null)
         {
-            Right = newNode;
+            _children.Add(newNode);
+        }
+        else if (oldNode is not null && newNode is null)
+        {
+            _children.Remove(oldNode);
         }
     }
+
     public bool Equals(IAstNode? other)
     {
-        return other is AndNode andNode && andNode.Left.Equals(Left) && andNode.Right.Equals(Right);
+        return other is AndNode node && !node.Any(n => !_children.Contains(n));
+    }
+
+    public IEnumerator<IAstNode> GetEnumerator()
+    {
+        for (int i = 0; i < _children.Count; i++)
+        {
+            yield return _children[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
 
@@ -161,11 +157,11 @@ public class NotNode : IAstNode
 
     public NotNode(IAstNode node)
     {
-        Node = node;
+        Child = node;
     }
 
 
-    public IAstNode Node
+    public IAstNode Child
     {
         get => _node;
         private set
@@ -183,17 +179,17 @@ public class NotNode : IAstNode
 
     public IAstNode Parent { get; internal set; }
 
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
-        if (oldNode == Node)
+        if (oldNode == Child && newNode is not null)
         {
-            Node = newNode;
+            Child = newNode;
         }
     }
 
     public bool Equals(IAstNode? other)
     {
-        return other is NotNode notNode && notNode.Node.Equals(Node);
+        return other is NotNode notNode && notNode.Child.Equals(Child);
     }
 }
 
@@ -213,7 +209,7 @@ public class IdentifierNode : IAstNode
     }
     public IAstNode Parent { get; internal set; }
 
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
         
     }
@@ -240,7 +236,7 @@ public class ValueNode : IAstNode
     }
     public IAstNode Parent { get; internal set; }
 
-    public void Swap(IAstNode oldNode, IAstNode newNode)
+    public void Swap(IAstNode? oldNode, IAstNode? newNode)
     {
         
     }

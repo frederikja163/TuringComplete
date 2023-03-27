@@ -54,7 +54,7 @@ internal sealed class TokenStream : IEnumerator<Token>
 
     public bool Accept(TokenType type) => Accept(type, out Token _);
 
-    public bool Accept(TokenType type, out Token? token)
+    public bool Accept(TokenType type, [NotNullWhen(true)] out Token? token)
     {
         if (!_tokens.Any())
         {

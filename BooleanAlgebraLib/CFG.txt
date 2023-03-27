@@ -9,3 +9,13 @@ Expression ::= leftParenthesis Or rightParenthesis
 	| identifier
 	| true
 	| false
+
+Prog ::= Or
+Or ::= And (or Or)*
+And ::= Not (and And)*
+Not ::= not Not
+	| Expression
+Expression ::= leftParenthesis Or rightParenthesis
+	| identifier
+	| true
+	| false

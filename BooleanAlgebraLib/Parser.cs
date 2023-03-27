@@ -14,22 +14,30 @@ public static class Parser
 
     private static IAstNode ParseOr(TokenStream stream)
     {
-        IAstNode node = ParseAnd(stream);
-        if (stream.Accept(TokenType.Or))
+        List<IAstNode> children = new List<IAstNode>() { ParseAnd(stream) };
+        while (stream.Accept(TokenType.Or))
         {
-            return new OrNode(node, ParseOr(stream));
+            children.Add(ParseOr(stream));
         }
-        return node;
+        if (children.Count == 1)
+        {
+            return children[0];
+        }
+        return new OrNode(children);
     }
 
     private static IAstNode ParseAnd(TokenStream stream)
     {
-        IAstNode node = ParseNot(stream);
-        if (stream.Accept(TokenType.And))
+        List<IAstNode> children = new List<IAstNode>() { ParseNot(stream) };
+        while (stream.Accept(TokenType.And))
         {
-            return new AndNode(node, ParseAnd(stream));
+            children.Add(ParseAnd(stream));
         }
-        return node;
+        if (children.Count == 1)
+        {
+            return children[0];
+        }
+        return new AndNode(children);
     }
 
     private static IAstNode ParseNot(TokenStream stream)
@@ -52,7 +60,7 @@ public static class Parser
             }
             throw new Exception("Expected ')'");
         }
-        else if (stream.Accept(TokenType.Identifier, out Token token))
+        else if (stream.Accept(TokenType.Identifier, out Token? token))
         {
             return new IdentifierNode(token.Match);
         }

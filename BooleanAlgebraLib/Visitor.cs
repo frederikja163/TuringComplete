@@ -43,19 +43,23 @@ public abstract class VisitorBase
 
     public virtual void Visit(AndNode node)
     {
-        Visit(node.Left);
-        Visit(node.Right);
+        foreach (IAstNode child in node)
+        {
+            Visit(child);
+        }
     }
 
     public virtual void Visit(OrNode node)
     {
-        Visit(node.Left);
-        Visit(node.Right);
+        foreach (IAstNode child in node)
+        {
+            Visit(child);
+        }
     }
 
     public virtual void Visit(NotNode node)
     {
-        Visit(node.Node);
+        Visit(node.Child);
     }
 
     public virtual void Visit(IdentifierNode node)

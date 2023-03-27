@@ -15,6 +15,7 @@ public sealed class SimplifyVisitor : VisitorBase
         IdentityLaw(node);
         IdempotentLaw(node);
         ComplementLaw(node);
+        AssociativeLaw(node);
         base.Visit(node);
     }
 
@@ -24,6 +25,7 @@ public sealed class SimplifyVisitor : VisitorBase
         IdentityLaw(node);
         IdempotentLaw(node);
         ComplementLaw(node);
+        AssociativeLaw(node);
         base.Visit(node);
     }
 
@@ -41,90 +43,114 @@ public sealed class SimplifyVisitor : VisitorBase
     // X|1=1
     public static void AnnulmentLaw(OrNode node)
     {
-        if (node.Left is ValueNode left && left.Value ||
-            node.Right is ValueNode right && right.Value)
+        foreach (IAstNode child in node)
         {
-            node.Parent.Swap(node, new ValueNode(true));
+            if (child is ValueNode valueNode && valueNode.Value)
+            {
+                node.Parent.Swap(node, new ValueNode(true));
+                return;
+            }
         }
     }
     // X&0=0
     public static void AnnulmentLaw(AndNode node)
     {
-        if (node.Left is ValueNode left && !left.Value ||
-            node.Right is ValueNode right && !right.Value)
+        foreach (IAstNode child in node)
         {
-            node.Parent.Swap(node, new ValueNode(false));
+            if (child is ValueNode valueNode && !valueNode.Value)
+            {
+                node.Parent.Swap(node, new ValueNode(false));
+                return;
+            }
         }
     }
 
     // X|0=X
     public static void IdentityLaw(OrNode node)
     {
-        if (node.Left is ValueNode left && !left.Value)
+        foreach (IAstNode child in node)
         {
-            node.Parent.Swap(node, node.Right);
-        }
-        else if (node.Right is ValueNode right && !right.Value)
-        {
-            node.Parent.Swap(node, node.Left);
+            if (child is ValueNode valueNode && !valueNode.Value)
+            {
+                node.Swap(child, null);
+            }
         }
     }
     // X&1=X
     public static void IdentityLaw(AndNode node)
     {
-        if (node.Left is ValueNode left && left.Value)
+        foreach (IAstNode child in node)
         {
-            node.Parent.Swap(node, node.Right);
-        }
-        else if (node.Right is ValueNode right && right.Value)
-        {
-            node.Parent.Swap(node, node.Left);
+            if (child is ValueNode valueNode && valueNode.Value)
+            {
+                node.Swap(child, null);
+            }
         }
     }
 
     // X|X=X
     public static void IdempotentLaw(OrNode node)
     {
-        if (node.Left.Equals(node.Right))
+        List<IAstNode> seenNodes = new List<IAstNode>();
+        foreach(IAstNode child in node)
         {
-            node.Parent.Swap(node, node.Left);
+            if (seenNodes.Contains(child))
+            {
+                node.Swap(child, null);
+            }
+            else
+            {
+                seenNodes.Add(child);
+            }
         }
     }
     // X&X=X
     public static void IdempotentLaw(AndNode node)
     {
-        if (node.Left.Equals(node.Right))
+        List<IAstNode> seenNodes = new List<IAstNode>();
+        foreach (IAstNode child in node)
         {
-            node.Parent.Swap(node, node.Left);
+            if (seenNodes.Contains(child))
+            {
+                node.Swap(child, null);
+            }
+            else
+            {
+                seenNodes.Add(child);
+            }
         }
     }
 
     // X|!X=1
     public static void ComplementLaw(OrNode node)
     {
-        if (node.Left is NotNode left && left.Node.Equals(node.Right) ||
-            node.Right is NotNode right && right.Node.Equals(node.Left))
+        foreach(NotNode notNode in node.OfType<NotNode>())
         {
-            node.Parent.Swap(node, new ValueNode(true));
+            if (node.Any(n => n.Equals(notNode.Child)))
+            {
+                node.Parent.Swap(node, new ValueNode(true));
+            }
         }
     }
 
     // X&!X=0
     public static void ComplementLaw(AndNode node)
     {
-        if (node.Left is NotNode left && left.Node.Equals(node.Right) ||
-            node.Right is NotNode right && right.Node.Equals(node.Left))
+        foreach (NotNode notNode in node.OfType<NotNode>())
         {
-            node.Parent.Swap(node, new ValueNode(false));
+            if (node.Any(n => n.Equals(notNode.Child)))
+            {
+                node.Parent.Swap(node, new ValueNode(false));
+            }
         }
     }
 
     // !!X=X
     public static void DoubleNegationLaw(NotNode node)
     {
-        if (node.Node is NotNode child)
+        if (node.Child is NotNode child)
         {
-            node.Parent.Swap(node, child.Node);
+            node.Parent.Swap(node, child.Child);
         }
     }
 
@@ -133,10 +159,35 @@ public sealed class SimplifyVisitor : VisitorBase
     // X&Y=Y&X
 
     // Associative Law.
-    // X&(Y&Z)=(X&Y)&Z=(X&Z)&Y=X&Z&Y 
+    // X&(Y&Z)=(X&Y)&Z=(X&Z)&Y=X&Z&Y
+    public static void AssociativeLaw(AndNode node)
+    {
+        foreach (AndNode childNode in node.OfType<AndNode>())
+        {
+            AssociativeLaw(childNode);
+            node.Swap(childNode, null);
+            foreach (IAstNode childChildNode in childNode)
+            {
+                node.Swap(null, childChildNode);
+            }
+        }
+    }
+
     // X|(Y|Z)=(X|Y)|Z=(X|Z)|Y=X|Z|Y
+    public static void AssociativeLaw(OrNode node)
+    {
+        foreach (OrNode childNode in node.OfType<OrNode>())
+        {
+            AssociativeLaw(childNode);
+            node.Swap(childNode, null);
+            foreach (IAstNode childChildNode in childNode)
+            {
+                node.Swap(null, childChildNode);
+            }
+        }
+    }
 
     // Distributive Law.
     // X|(Y&Z)=(X|Y)&(X|Z)
-    // X&(Y|Z)=X&Y|X&Z
+    // X&(Y|Z)=(X&Y)|(X&Z)
 }
